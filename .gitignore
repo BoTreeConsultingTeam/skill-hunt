@@ -15,5 +15,8 @@
 /log/*.log
 /tmp
 
+# The database config is not recommended to be pushed to the repo.
+/config/database.yml
+
 # Files used by different IDEs
 .project
