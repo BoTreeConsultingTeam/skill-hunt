@@ -1,0 +1,26 @@
+# References:
+#       http://stackoverflow.com/questions/9987171/rails-3-2-fatal-peer-authentication-failed-for-user-pgerror
+
+# DRY database.yml reference: http://stackoverflow.com/questions/6651275/what-do-the-mean-in-this-database-yml-file
+postgre_common_config: &postgre_common_config
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  username: <POSTGRESQL_USER_NAME> # if using default PostgreSQL user then the value should be: postgres
+  password: <POSTGRESQL_USER_PASSWORD>
+  host: <POSTGRESQL_HOST> # If the DB is setup on local machine then use: locahost
+
+development:
+  <<: *postgre_common_config
+  database: skill_hunt_development
+
+# Warning: The database defined as "skill_hunt_test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *postgre_common_config
+  database: skill_hunt_test
+
+production:
+  <<: *postgre_common_config
+  database: skill_hunt_production
