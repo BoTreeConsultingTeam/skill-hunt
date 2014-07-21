@@ -8,7 +8,7 @@ postgre_common_config: &postgre_common_config
   pool: 5
   username: <POSTGRESQL_USER_NAME> # if using default PostgreSQL user then the value should be: postgres
   password: <POSTGRESQL_USER_PASSWORD>
-  host: <POSTGRESQL_HOST> # If the DB is setup on local machine then use: localhost
+  host: <POSTGRESQL_HOST> # If the DB is setup on local machine then use: locahost
 
 development:
   <<: *postgre_common_config
