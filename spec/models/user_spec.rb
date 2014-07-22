@@ -20,7 +20,7 @@ describe User do
     end  
 
     it "when blank shows user-friendly message" do
-      expect(errors.messages[:first_name]).to include("is required")
+      expect(errors[:first_name]).to include("is required")
     end
   end
 
@@ -32,7 +32,7 @@ describe User do
     end
 
     it "when blank shows user-friendly message" do
-      expect(user.errors.messages[:last_name]).to include("is required")
+      expect(user.errors[:last_name]).to include("is required")
     end
   end
 
@@ -44,18 +44,19 @@ describe User do
     end
 
     it "when not selected shows user-friendly message" do
-      expect(errors.messages[:gender]).to include("must be selected")
+      expect(errors[:gender]).to include("must be selected")
     end
 
 
     it "must have only one character" do      
-      user.gender= "a" * 1        
-      expect(errors.messages[:gender]).to_not be_empty
+      user.gender= "M" * 1    
+      user.save    
+      expect(errors[:gender]).to be_empty
     end
 
     it "must be either F or M" do
       user.gender = "A"
-      expect(errors.messages[:gender]).to include("must be M or F")
+      expect(errors[:gender]).to include("must be M or F")
     end
 
   end
@@ -73,7 +74,7 @@ describe User do
                       last_name: "Vyas", 
                       gender: "M",
                       email: "ankurvy1@gmail.com",
-                      password: "12345678",
+                      password: "Ajay12@!",
                       blocked: "false",
                       country_id: "1"
                      )
@@ -86,7 +87,7 @@ describe User do
                       last_name: "Bhatt", 
                       gender: "F",
                       email: "ankurvy1@gmail.com",
-                      password: "12345678",
+                      password: "Ajay12@!",
                       blocked: "false",
                       country_id: "1"
                       )
@@ -112,7 +113,7 @@ describe User do
     end
 
     it "when blank shows custom message " do      
-      expect(errors.messages[:password]).to include("is required")
+      expect(errors[:password]).to include("is required")
     end
 
 
@@ -121,19 +122,27 @@ describe User do
     end
 
     it "must be of maximum 20 characters" do
-      pending
+      user.password = "a" * 21
+      user.save
+      expect(user.errors).to_not be_empty 
     end
 
     it "must have atleast 1 captial letter, 1 Special symbol and 1 number " do
-      pending
+      user.password = "Ajay12@!"
+      user.save
+      expect(user.errors[:password]).to be_empty
     end
 
     it "when have more than 1 captial letter, special symbol or number" do
-      pending
+      user.password = "Ajay12@!"
+      user.save
+      expect(user.errors[:password]).to be_empty
     end
 
     it "when dosen't contain 1 captial letter, special symbol or number" do
-      pending
+      user.password = "abcdefg"
+      user.save
+      expect(user.errors).to_not be_empty
     end
   end
 
@@ -146,23 +155,23 @@ describe User do
     end
 
     it "when not selected shows user-friendly message" do   
-      expect(errors.messages[:country_id]).to include("must be selected")
+      expect(errors[:country_id]).to include("must be selected")
     end
 
   end
 
   context "#blocked" do
     it "must not be blank" do
-      expect(user.blocked).to be_false
+      expect(user.blocked).to be false
     end
 
     it "must be false by default" do
-      expect(user.blocked).to be_false
+      expect(user.blocked).to be false
     end 
 
     it "must be true when set to true" do
       user.blocked = true
-      expect(user.blocked).to be_true
+      expect(user.blocked).to be true
     end   
   end 
 
