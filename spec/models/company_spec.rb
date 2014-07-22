@@ -14,7 +14,7 @@ describe Company do
     end
     
     it "when blank shows user-friendly message" do
-      expect(errors.messages[:company_name]).to include("is required")
+      expect(errors[:company_name]).to include("is required")
     end   
   end
 

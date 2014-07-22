@@ -9,11 +9,11 @@ describe Country do
     let!(:errors) { country.save; country.errors }
 
   	it "cannot be blank" do      		
-  		expect(errors.messages[:country_name]).to_not be_empty
+  		expect(errors[:country_name]).to_not be_empty
   	end
     
   	it "when blank shows user-friendly message" do
-  		expect(errors.messages[:country_name]).to include("is required")
+  		expect(errors[:country_name]).to include("is required")
   	end
   end
 end
