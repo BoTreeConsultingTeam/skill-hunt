@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe User do
-
+  let!(:india) { Country.create(country_name: 'India') }
   let(:user) { User.new }
 
   it { should respond_to(:first_name) }
@@ -11,43 +11,57 @@ describe User do
   it { should respond_to(:password) }
   it { should respond_to(:blocked) }  
   it { should respond_to(:country_id) }
+  it { should respond_to(:role) }
 
-  context "#first_name" do
+  shared_examples "check" do | attribute,message |
     let!(:errors) { user.save; user.errors }
 
     it "cannot be blank" do
-      expect(errors[:first_name]).to_not be_empty
+      expect(errors["#{attribute}"]).to_not be_empty
+    end
+
+    it "when blank shows user-friendly message" do
+      expect(errors["#{attribute}"]).to include("#{message}")
     end  
+  end
+
+  context "#first_name" do
+
+    message = "is required"
+    it_should_behave_like "check", [:first_name, message]
+=begin
+    let!(:errors) { user.save; user.errors }
 
     it "when blank shows user-friendly message" do
       expect(errors[:first_name]).to include("is required")
     end
+=end
   end
-
+  
   context "#last_name" do
+    message = "is required"
+    it_should_behave_like "check", [:last_name, message]
+=begin
     let!(:errors) { user.save; user.errors }
-
-    it "cannot be blank" do 
-      expect(user.errors[:last_name]).to_not be_empty
-    end
 
     it "when blank shows user-friendly message" do
       expect(user.errors[:last_name]).to include("is required")
     end
+=end
   end
 
-  context "#gender" do
-    let!(:errors) { user.save; user.errors }
 
-    it "cannot be blank" do 
-      expect(errors[:gender]).to_not be_empty
-    end
+  context "#gender" do
+    message = "must be selected"
+    it_should_behave_like "check", [:gender, message]
+=begin
+    let!(:errors) { user.save; user.errors }
 
     it "when not selected shows user-friendly message" do
       expect(errors[:gender]).to include("must be selected")
     end
-
-
+=end
+    let!(:errors) { user.save; user.errors }
     it "must have only one character" do      
       user.gender= "M" * 1 
       user.save       
@@ -62,20 +76,17 @@ describe User do
   end
 
   context "#email" do  
-
-    it "email cannot be blank " do
-      user.save   
-      expect(user.errors[:email]).to_not be_empty
-    end
+    message = "is required"
+    it_should_behave_like "check", [:email, message]
 
     it "email already taken" do
       user = User.new(first_name:"Ankur",
                       last_name: "Vyas", 
                       gender: "M",
                       email: "ankurvy1@gmail.com",
-                      password: "Ankur12@",
+                      password: "Ankur12@12",
                       blocked: "false",
-                      country_id: "1"
+                      country_id: india.id
                      )
       user.save
       expect(user.errors).to be_empty
@@ -86,7 +97,7 @@ describe User do
                       email: "ankurvy1@gmail.com",
                       password: "Ankur12@",
                       blocked: "false",
-                      country_id: "1"
+                      country_id: india.id
                       )
       
       other_user.save      
@@ -102,18 +113,17 @@ describe User do
   end
 
   context "#password" do
+    message = "is required"
+
+    it_should_behave_like "check", [:password,message]
+
     let!(:errors) { user.save; user.errors }
 
-    it "cannot be blank" do      
-      expect(errors[:password]).to_not be_empty
-    end
-
-    it "when blank shows custom message " do      
-      expect(errors[:password]).to include("is required")
-    end
 
     context "is invalid" do
       it "when have less than 8 characters" do
+        user.password = "aaaa"
+        user.save
         expect(errors[:password]).to include("should be more than 8 characters")
       end
 
@@ -148,15 +158,15 @@ describe User do
 
 
   context "#country_id" do
+    message = "must be selected"
+    it_should_behave_like "check", [:country_id, message]
+=begin
     let!(:errors) { user.save; user.errors}
-
-    it "cannot be blank" do    
-      expect(errors[:country_id]).to_not be_empty
-    end
 
     it "when not selected shows user-friendly message" do   
       expect(errors[:country_id]).to include("must be selected")
     end
+=end
   end
 
   context "#blocked" do
@@ -173,5 +183,88 @@ describe User do
       expect(user.blocked).to be true
     end   
   end 
+
+  context "#is_administrator?" do
+    it "returns false when user does not have any role" do
+      expect(user.is_administrator?).to be false
+    end
+
+    it "returns true when user is assigned administrator role" do
+      skip
+    end
+
+    it "returns false when user is not assigned administrator role" do
+      skip
+    end
+  end
+
+  context "#is_end_user?" do
+    it "returns false when when user does not have any role" do
+      skip
+    end
+
+    it "returns true when user is assigned end_user role" do
+    skip
+    end
+
+    it "returns false when user is not assigned end_user role" do
+      skip
+    end
+  end
+
+
+  context "#is_company_representative?" do
+    it "returns false when when user does not have any role" do
+      skip
+    end
+
+    it "returns true when user is assigned company_representative role" do
+    skip
+    end
+
+    it "returns false when user is not assigned company_representative role" do
+      skip
+    end
+  end
+
+  context "#is_signed_in?" do
+    it "returns true when a user is signed in" do
+      skip
+    end
+
+    it "returns false when a user is not signed in" do
+      skip
+    end
+  end
+
+  context "#is_active?" do
+    it "returns true when user is active" do
+      skip  
+    end
+
+    it "returns false when user is blocked" do
+      skip  
+    end
+  end
+
+  context "#is_having_skill(skill)?" do
+    it "returns false when user have not selected desired skill" do
+      skip
+    end
+
+    it "returns true when user have selected desired skill" do
+      skip
+    end
+  end
+
+  context "#from_India?" do
+    it "returns true when user is from India" do
+      skip
+    end
+
+    it "returns false when user is not from India" do
+      skip
+    end
+  end
 
 end
