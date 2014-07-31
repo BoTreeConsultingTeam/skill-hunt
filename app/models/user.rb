@@ -13,6 +13,9 @@ class User < ActiveRecord::Base
   has_one :user_role
   has_one :role, through: :user_role
 
+  has_many :user_skills
+  has_many :skills, through: :user_skills
+
   after_create :generate_authentication_token
 
   def validate_gender
@@ -75,6 +78,4 @@ class User < ActiveRecord::Base
     end while User.exists?(authentication_token: token)
     token
   end 
-
-
 end  
