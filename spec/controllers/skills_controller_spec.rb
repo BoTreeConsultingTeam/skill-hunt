@@ -1,8 +1,9 @@
 require 'spec_helper'
-require 'shared_context'
 
 describe Api::V1::SkillsController, type: :controller do
   include_context 'initialized_objects_for_skill'
+
+  let!(:current_user) { update_user_authentication(dummy_auth_token, admin_user) }
 
   before do
     params.merge!(skills_attr)
@@ -72,8 +73,7 @@ describe Api::V1::SkillsController, type: :controller do
       end
 
       it 'if an end user tries to create it' do 
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         create_skill
         expect(response_json["errors"]).to_not be_empty
         expect(Skill.count).to eq 0  
@@ -146,8 +146,7 @@ describe Api::V1::SkillsController, type: :controller do
 
       it 'if not updated by administrator' do
         modify_skill_attribute(:skill_name, 'C++')
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         update_skill(skill.id)
         expect(response_json["errors"]).to_not be_empty
         expect(category.name).to include 'Database'
@@ -191,14 +190,16 @@ describe Api::V1::SkillsController, type: :controller do
   context "#like" do
     let!(:category)  { Category.create(name:"Web Apps") }
 
-    let!(:skill_one) {  Skill.create( skill_name: "Ruby On Rails1",
+    let!(:skill_1) {  
+                      Skill.create( 
+                        skill_name: "Ruby On Rails1",
                         skill_desc: "Used to create dynamic websites",
                         category_id: category.id )  
-                      }
-    
-    it "when skill is liked by user" do
+                    }
+
+    it 'assigns skill to user, when liked' do
       params.delete(:skill)      
-      params[:id] = skill_one.id     
+      params[:id] = skill_1.id     
       post :like, params
       expect(admin_user_attrs.skills).to_not be_empty
     end
@@ -210,8 +211,8 @@ describe Api::V1::SkillsController, type: :controller do
     end
 
     it "displays message 'already liked' when skill is already liked by user" do
-      admin_user_attrs.skills << skill_one
-      params[:id] = skill_one.id
+      admin_user_attrs.skills << skill_1
+      params[:id] = skill_1.id
       post :like, params
       expect(response_json["error"]).to_not be_empty
     end

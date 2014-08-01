@@ -42,8 +42,6 @@ shared_context 'initialize_common_objects' do
   let(:end_user) { other_user_attrs.role = end_user_role
                    other_user_attrs}
 
-  let(:current_user) { admin_user }
-
   def dummy_auth_token
     "dummy auth token"
   end
@@ -57,9 +55,15 @@ shared_context 'initialize_common_objects' do
     params.merge!(authentication_token: token)
   end
 
-  before do
-    update_user_authentication(dummy_auth_token, admin_user)
+  def set_current_user(user)
+    token = get_token(user)
+    update_user_authentication(token, user)
   end
+
+  def get_token(user)
+    user.is_administrator? ? dummy_auth_token : 'token' 
+  end
+
 end
 
 

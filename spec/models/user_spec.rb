@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'shared_context'
 
 describe User do
   include_context 'initialize_common_objects'

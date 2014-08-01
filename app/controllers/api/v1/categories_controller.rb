@@ -6,21 +6,17 @@ class Api::V1::CategoriesController < ApplicationController
 
   def create
     category = Category.new(category_params)
-    json = {}
     json = save_category(category)
     render json: json, status: 201
   end
 
   def update
-    json = {}
-
     unless @category
       render_object_not_found_error_json(:category, params[:id]) and return
     end
 
     @category.attributes = category_params
     json = save_category(@category)
-
     render json: json, status: 200
   end
 
@@ -29,8 +25,6 @@ class Api::V1::CategoriesController < ApplicationController
   end
 
   def show
-    json = {}
-
     unless @category
       render_object_not_found_error_json(:category, params[:id]) and return
     end
@@ -42,15 +36,7 @@ class Api::V1::CategoriesController < ApplicationController
   private
 
     def save_category(category)
-      json = {}
-
-      if category.save
-        json = model_basic_json(category)
-      else
-        json = model_errors_json(category)
-      end
-
-      json
+      category.save ? model_basic_json(category) : model_errors_json(category)
     end
 
     def set_category
@@ -60,5 +46,4 @@ class Api::V1::CategoriesController < ApplicationController
     def category_params
       params.require(:category).permit(:name)
     end
-
 end

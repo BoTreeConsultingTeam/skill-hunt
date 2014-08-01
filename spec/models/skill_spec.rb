@@ -16,12 +16,6 @@ describe Skill do
     it "when blank shows user-friendly message" do
       expect(errors[:skill_name]).to include("is required")
     end
-
-    it "contains maximum 30 characters" do
-      skill.skill_name = 'a'*31
-      skill.save
-      expect(errors[:skill_name]).to include "must be less than 30 characters"
-    end
   end
 
   context "#skill_desc" do 
@@ -33,14 +27,6 @@ describe Skill do
 
     it "when blank shows user-friendly message" do
       expect(errors[:skill_desc]).to include "is required"
-    end
-
-    it "contains minimum 10 characters" do
-      skip
-    end
-
-    it "contains maximum 50 characters" do
-      skip
     end
   end
 

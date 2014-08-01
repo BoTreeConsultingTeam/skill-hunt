@@ -1,8 +1,9 @@
 require 'spec_helper'
-require 'shared_context'
 
 describe Api::V1::CountriesController, type: :controller do
   include_context 'initialized_objects_for_country'
+
+  let!(:current_user) { update_user_authentication(dummy_auth_token, admin_user) }
 
   before do
     params.merge!(country_attrs)
@@ -51,8 +52,7 @@ describe Api::V1::CountriesController, type: :controller do
       end
 
       it "when an end user tries to create country" do        
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         expect { create_country }.to change(Country,:count).by(0) 
       end
     end
@@ -100,8 +100,7 @@ describe Api::V1::CountriesController, type: :controller do
       end
 
       it "when an end user tries to update country" do        
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         update_country(country.id)
         expect(response_json["errors"]).to_not be_empty
         expect(country.country_name).to include "Brazil"
@@ -117,7 +116,7 @@ describe Api::V1::CountriesController, type: :controller do
       delete :destroy, params
     end
 
-    it 'shows action not supported error messge' do
+    it 'shows action not supported error message' do
       delete_country(country.id)
       expect(response.status).to be 501
     end    

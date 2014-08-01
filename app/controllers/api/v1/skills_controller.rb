@@ -6,14 +6,11 @@ class Api::V1::SkillsController < ApplicationController
   
   def create
     skill = Skill.new(skill_params)
-    json = {}
     json = save_skill(skill)
     render json: json, status: 201
   end
 
   def update
-    json = {} 
-
     unless @skill
       render_object_not_found_error_json(:skill, params[:id]) and return
     end    
@@ -28,8 +25,6 @@ class Api::V1::SkillsController < ApplicationController
   end
 
   def show
-    json = {}
-
     unless @skill
       render_object_not_found_error_json(:skill, params[:id]) and return
     end
@@ -39,16 +34,13 @@ class Api::V1::SkillsController < ApplicationController
   end
 
   def like
-    json = {}
-
     unless @skill
       render_object_not_found_error_json(:skill, params[:id]) and return
     end
 
     if not current_user.skills.exists?(@skill.id)
-       current_user.skills << @skill
+      current_user.skills << @skill
     else 
-
       json = error_json("Skill is already liked by user!")  
     end 
 
@@ -58,15 +50,7 @@ class Api::V1::SkillsController < ApplicationController
   private
 
     def save_skill(skill)
-      json = {}
-
-      if skill.save
-        json = model_basic_json(skill)
-      else
-        json = model_errors_json(skill)
-      end
-
-      json
+      skill.save ? model_basic_json(skill) : model_errors_json(skill)
     end
 
     def set_skill
@@ -76,5 +60,4 @@ class Api::V1::SkillsController < ApplicationController
     def skill_params
       params.require(:skill).permit(:skill_name, :skill_desc, :category_id)
     end
-
 end

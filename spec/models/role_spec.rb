@@ -16,8 +16,4 @@ describe Role do
       expect(errors[:role_name]).to include("is required")
     end
 	end
-
-  it "is assigned to user(s)" do
-    skip
-  end
 end

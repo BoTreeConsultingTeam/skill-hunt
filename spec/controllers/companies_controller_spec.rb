@@ -1,8 +1,9 @@
 require 'spec_helper'
-require 'shared_context'
 
 describe Api::V1::CompaniesController , :type => :controller do
   include_context 'initialized_objects_for_company'
+
+  let!(:current_user) { update_user_authentication(dummy_auth_token, admin_user) }
 
   before do
     params.merge!(company_attrs)
@@ -51,8 +52,7 @@ describe Api::V1::CompaniesController , :type => :controller do
       end
 
       it "when an end user tries to create company" do        
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         create_company
         expect(response_json["errors"]).to_not be_empty
         expect(Company.count).to eq 0  
@@ -102,8 +102,7 @@ describe Api::V1::CompaniesController , :type => :controller do
       end
 
       it "if an end user tries to create it" do        
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         update_company(company.id)
         expect(response_json["errors"]).to_not be_empty
         expect(company.company_name).to include "TCS"

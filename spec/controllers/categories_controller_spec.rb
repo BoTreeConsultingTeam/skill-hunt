@@ -1,8 +1,9 @@
 require 'spec_helper'
-require 'shared_context'
 
 describe Api::V1::CategoriesController, type: :controller do
   include_context 'initialized_objects_for_category'
+
+  let!(:current_user) { update_user_authentication(dummy_auth_token, admin_user) }
 
   before do
     params.merge!(categories_attr)
@@ -61,8 +62,7 @@ describe Api::V1::CategoriesController, type: :controller do
       end
 
       it "if an end user tries to create it" do 
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         create_category
         expect(response_json["errors"]).to_not be_empty
         expect(Category.count).to eq 0  
@@ -112,8 +112,7 @@ describe Api::V1::CategoriesController, type: :controller do
 
       it 'if not updated by administrator' do
         modify_category_attribute(:name, 'Programming')
-        auth_token = "end user token"
-        update_user_authentication(auth_token, end_user)
+        set_current_user(end_user)
         update_category(category.id)
 
         expect(response_json["errors"]).to_not be_empty

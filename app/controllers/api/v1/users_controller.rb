@@ -6,13 +6,11 @@ class Api::V1::UsersController < ApplicationController
 
   def create
     user = User.new(user_params)
-    json = {}
     json = save_user(user)
     render json: json, status: 201
   end
 
   def update
-   json = {}
    unless @user
      render_object_not_found_error_json(:user, params[:id]) and return
    end    
@@ -23,19 +21,15 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def destroy
-    json = {}
-
     unless @user
       render_object_not_found_error_json(:user, params[:id]) and return
     end   
 
     @user.destroy      
-    render json: json, status: 200
+    render json: {}, status: 200
   end
 
   def show
-    json = {}
-
     unless authorized_user?
       render_forbidden_error_json('Unauthorized action attemped!') and return
     end
@@ -63,14 +57,6 @@ class Api::V1::UsersController < ApplicationController
     end
     
     def save_user(user)
-        json = {}
-
-        if user.save
-          json = model_basic_json(user)
-        else
-          json = model_errors_json(user)
-        end
-
-        json
+      user.save ? model_basic_json(user) : model_errors_json(user)
     end
 end

@@ -1,8 +1,9 @@
 require 'spec_helper'
-require 'shared_context'
 
 describe Api::V1::UsersController, type: :controller do
   include_context 'initialized_objects_for_user'
+
+  let!(:current_user) { update_user_authentication(dummy_auth_token, admin_user) }
 
   def expected_keys_in_json
     %w(id first_name last_name gender email blocked)
@@ -248,11 +249,6 @@ describe Api::V1::UsersController, type: :controller do
 
   context '#show' do
     let!(:user) { User.create(user_attrs[:user]) }
-    
-    def change_auth
-      auth_token = "End user token "
-      update_user_authentication(auth_token, end_user)
-    end
 
     def show_user(id)
       params[:id] = id
@@ -265,13 +261,13 @@ describe Api::V1::UsersController, type: :controller do
     end 
 
     it "display errors when an end user tries to see the details of other user" do        
-      change_auth
+      set_current_user(end_user)
       show_user(user.id)
       expect(response_json['error']).to_not be_empty
     end
   
     it "display details of current user" do
-      change_auth
+      set_current_user(end_user)
       show_user(other_user_attrs.id)
       expect(user_json.keys).to eql(expected_keys_in_json)    
     end
