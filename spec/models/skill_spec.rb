@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'shared_examples'
 
 describe Skill do
 	let (:skill){ Skill.new }
@@ -23,7 +22,6 @@ describe Skill do
       skill.save
       expect(errors[:skill_name]).to include "must be less than 30 characters"
     end
-
   end
 
   context "#skill_desc" do 
@@ -37,14 +35,13 @@ describe Skill do
       expect(errors[:skill_desc]).to include "is required"
     end
 
-    it "contains minimum 10 characters", test: true do
+    it "contains minimum 10 characters" do
       skip
     end
 
     it "contains maximum 50 characters" do
       skip
     end
-
   end
 
   it "must belong to Category" do

@@ -4,14 +4,6 @@ require 'shared_context'
 describe Api::V1::UsersController, type: :controller do
   include_context 'initialized_objects_for_user'
 
-  def dummy_auth_token
-    "dummy auth token"
-  end
-
-  def update_user_authentication_token(user, auth_token)
-    user.update_attribute(:authentication_token, auth_token)
-  end
-
   def expected_keys_in_json
     %w(id first_name last_name gender email blocked)
   end
@@ -30,9 +22,6 @@ describe Api::V1::UsersController, type: :controller do
 
   before do
     params.merge!(user_attrs)
-    auth_token = dummy_auth_token
-    update_user_authentication_token(admin_user, auth_token)
-    params.merge!(authentication_token: auth_token)
   end
   
   context "#create" do
@@ -262,8 +251,7 @@ describe Api::V1::UsersController, type: :controller do
     
     def change_auth
       auth_token = "End user token "
-      update_user_authentication_token(end_user, auth_token)
-      params.merge!(authentication_token: auth_token)
+      update_user_authentication(auth_token, end_user)
     end
 
     def show_user(id)

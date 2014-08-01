@@ -4,19 +4,8 @@ require 'shared_context'
 describe Api::V1::CompaniesController , :type => :controller do
   include_context 'initialized_objects_for_company'
 
-  def dummy_auth_token
-    "dummy auth token"
-  end
-
-  def update_user_authentication_token(user, auth_token)
-    user.update_attribute(:authentication_token, auth_token)
-  end
-
   before do
     params.merge!(company_attrs)
-    auth_token = dummy_auth_token
-    update_user_authentication_token(admin_user, auth_token)
-    params.merge!(authentication_token: auth_token)
   end
 
   def expected_keys_in_json
@@ -36,7 +25,6 @@ describe Api::V1::CompaniesController , :type => :controller do
   end
 
   context "#create" do 
-
     def create_company
       post :create, params
     end
@@ -62,10 +50,9 @@ describe Api::V1::CompaniesController , :type => :controller do
         expect(get_error('company_name')).to include("is required")
       end
 
-      it "display errors when an end user tries to create the company details of other user's company details" do        
+      it "when an end user tries to create company" do        
         auth_token = "end user token"
-        update_user_authentication_token(end_user, auth_token)
-        params.merge!(authentication_token: auth_token)
+        update_user_authentication(auth_token, end_user)
         create_company
         expect(response_json["errors"]).to_not be_empty
         expect(Company.count).to eq 0  
@@ -74,7 +61,6 @@ describe Api::V1::CompaniesController , :type => :controller do
   end
 
   context "#update" do 
-    
     let!(:company) { Company.create(company_attrs[:company]) }
 
     before do       
@@ -103,24 +89,21 @@ describe Api::V1::CompaniesController , :type => :controller do
       expect(response.status).to eq 200
     end 
 
-    context "display error" do
-
-      it "when company name is blank" do
+    context "shows error" do
+      it "if company name is blank" do
         modify_company_attribute(:company_name, '')
         update_company(company.id)
         expect(get_error('company_name')).to include("is required")
-
       end
 
-      it "when company is not present" do
+      it "if company is not present" do
         update_company(non_exists_company_id)
         expect(response_json['error']).to_not be_empty
       end
 
-      it "display errors when an end user tries to update the company details of other user's company details " do        
+      it "if an end user tries to create it" do        
         auth_token = "end user token"
-        update_user_authentication_token(end_user, auth_token)
-        params.merge!(authentication_token: auth_token)
+        update_user_authentication(auth_token, end_user)
         update_company(company.id)
         expect(response_json["errors"]).to_not be_empty
         expect(company.company_name).to include "TCS"
@@ -129,7 +112,6 @@ describe Api::V1::CompaniesController , :type => :controller do
   end
 
   context '#destroy' do
-    
     let!(:company) { Company.create(company_attrs[:company]) }
 
     def delete_company(id)
@@ -139,13 +121,11 @@ describe Api::V1::CompaniesController , :type => :controller do
 
     it 'shows error that action not supported' do
       delete_company(company.id)
-      expect(response_json['error']).to_not be_empty
+      expect(response.status).to be 501
     end
-    
   end
 
   context "#show" do
- 
     let!(:company) { Company.create(company_attrs[:company]) }
 
     def show_company(id)
@@ -162,6 +142,5 @@ describe Api::V1::CompaniesController , :type => :controller do
       show_company(non_exists_company_id)
       expect(response_json['error']).to_not be_empty
     end
-
   end
 end

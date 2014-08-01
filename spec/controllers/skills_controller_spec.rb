@@ -4,19 +4,8 @@ require 'shared_context'
 describe Api::V1::SkillsController, type: :controller do
   include_context 'initialized_objects_for_skill'
 
-  def dummy_auth_token
-    "dummy auth token"
-  end
-
-  def update_user_authentication_token(user, auth_token)
-    user.update_attribute(:authentication_token, auth_token)
-  end
-
   before do
     params.merge!(skills_attr)
-    auth_token = dummy_auth_token
-    update_user_authentication_token(admin_user, auth_token)
-    params.merge!(authentication_token: auth_token)
   end
 
   def expected_keys_in_json
@@ -36,7 +25,6 @@ describe Api::V1::SkillsController, type: :controller do
   end
 
   context '#create' do
-
     def create_skill
       post :create, params
     end
@@ -56,7 +44,6 @@ describe Api::V1::SkillsController, type: :controller do
     end
 
     context 'shows error' do
-
       context 'skill name' do
         it 'is missing' do
           modify_skill_attribute('skill_name','')
@@ -78,27 +65,23 @@ describe Api::V1::SkillsController, type: :controller do
         expect(get_error('skill_desc')).to include 'is required'
       end
 
-
       it 'when category is missing' do
         modify_skill_attribute('category_id','')
         create_skill
         expect(get_error('category_id')).to include 'is required'
       end
 
-      it 'if not created by administrator' do 
+      it 'if an end user tries to create it' do 
         auth_token = "end user token"
-        update_user_authentication_token(end_user, auth_token)
-        params.merge!(authentication_token: auth_token)
+        update_user_authentication(auth_token, end_user)
         create_skill
         expect(response_json["errors"]).to_not be_empty
         expect(Skill.count).to eq 0  
       end
-
     end
   end
 
   context '#update' do
-
     let!(:skill) { Skill.create(skills_attr[:skill]) }
 
     def update_skill(id)
@@ -126,9 +109,7 @@ describe Api::V1::SkillsController, type: :controller do
     end
 
     context 'show error' do
-
       context 'skill name' do
-        
         it 'is missing' do
           modify_skill_attribute('skill_name','')
           update_skill(skill.id)
@@ -149,7 +130,6 @@ describe Api::V1::SkillsController, type: :controller do
           update_skill(skill.id)
           expect(get_error('skill_name')).to include 'has already been taken'
         end
-
       end
 
       it 'when skill description is missing' do
@@ -157,7 +137,6 @@ describe Api::V1::SkillsController, type: :controller do
         update_skill(skill.id)
         expect(get_error('skill_desc')).to include 'is required'
       end
-
 
       it 'when category is missing' do
         modify_skill_attribute('category_id','')
@@ -168,19 +147,15 @@ describe Api::V1::SkillsController, type: :controller do
       it 'if not updated by administrator' do
         modify_skill_attribute(:skill_name, 'C++')
         auth_token = "end user token"
-        update_user_authentication_token(end_user, auth_token)
-        params.merge!(authentication_token: auth_token)
+        update_user_authentication(auth_token, end_user)
         update_skill(skill.id)
-
         expect(response_json["errors"]).to_not be_empty
         expect(category.name).to include 'Database'
       end
-
     end
   end
 
   context '#destroy' do
-    
     let!(:skill) { Skill.create(skills_attr[:skill]) }
 
     def delete_skill(id)
@@ -190,9 +165,8 @@ describe Api::V1::SkillsController, type: :controller do
 
     it 'shows error that action not supported' do
       delete_skill(skill.id)
-      expect(response_json['error']).to_not be_empty
+      expect(response.status).to be 501
     end
-
   end
 
   context '#show' do
@@ -212,46 +186,34 @@ describe Api::V1::SkillsController, type: :controller do
       show_skill(non_exists_skill_id)
       expect(response_json['error']).to_not be_empty
     end
-
   end
-
+  
   context "#like" do
+    let!(:category)  { Category.create(name:"Web Apps") }
 
-  # let!(:category)  { Category.create(name:"Web Apps") }
-                    
+    let!(:skill_one) {  Skill.create( skill_name: "Ruby On Rails1",
+                        skill_desc: "Used to create dynamic websites",
+                        category_id: category.id )  
+                      }
+    
+    it "when skill is liked by user" do
+      params.delete(:skill)      
+      params[:id] = skill_one.id     
+      post :like, params
+      expect(admin_user_attrs.skills).to_not be_empty
+    end
 
-  # let!(:user1) { User.create(  first_name:"Ankur1",
-  #                             last_name: "Vyas1", 
-  #                             gender: "M",
-  #                             email: "ankurvy111@gmail.com",
-  #                             password: "Ankur12@12",
-  #                             blocked: "false",
-  #                             country_id: india.id) 
-  # }
+    it "display error when skill does not exist" do
+      params[:id] = -1
+      post :like, params
+      expect(response_json["error"]).to_not be_empty
+    end
 
-  #   it "when skill is liked by user", t: true do
-  #   skill_one =  Skill.create( skill_name: "Ruby On Rails1",
-  #                 skill_desc: "Used to create dynamic websites",
-  #                 category_id: category.id ) 
-  #     params[:id] = skill_one.id
-  #     post :like, params
-  #     #puts params
-  #     #puts user1.inspect
-  #     #puts user1.skills.inspect
-  #     expect(user1.skills).to_not be_empty
-  #   end
-
-  #   it "display error when skill does not exist" do
-  #     params[:id] = -1
-  #     post :like, params
-  #     expect(response_json["error"]).to_not be_empty
-  #   end
-
-  #   it "displays message 'already liked' when skill is already liked by user" do
-  #     user1.skills << skill_one
-  #     params[:id] = skill_one.id
-  #     post :like, params
-  #     expect(skill_json["errors"]).to_not be_empty
-  #   end
+    it "displays message 'already liked' when skill is already liked by user" do
+      admin_user_attrs.skills << skill_one
+      params[:id] = skill_one.id
+      post :like, params
+      expect(response_json["error"]).to_not be_empty
+    end
   end
 end

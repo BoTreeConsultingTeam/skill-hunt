@@ -1,7 +1,8 @@
 class Api::V1::SkillsController < ApplicationController
-before_action :set_skill, only: [:create, :update, :destroy, :show, :like]
-before_action :authenticate_user
-before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
+
+  before_action :set_skill, only: [:create, :update, :destroy, :show, :like]
+  before_action :authenticate_user
+  before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
   
   def create
     skill = Skill.new(skill_params)
@@ -23,7 +24,7 @@ before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
   end
 
   def destroy
-    render_forbidden_error_json('the functionality is not been supported')
+    render_not_implemented_method_error_json('the functionality is not been supported')
   end
 
   def show
@@ -43,16 +44,12 @@ before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
     unless @skill
       render_object_not_found_error_json(:skill, params[:id]) and return
     end
-      
-    #puts "=================#{current_user.skills.exists?}"
-    #puts "=================#{@skill.inspect}"
-    #puts "=================#{current_user.inspect}"
 
     if not current_user.skills.exists?(@skill.id)
-      current_user.skills << @skill
-      #puts "============user skill = #{current_user.inspect}"
+       current_user.skills << @skill
     else 
-      json = model_errors_json(current_user) 
+
+      json = error_json("Skill is already liked by user!")  
     end 
 
     render json: json, status: 200 

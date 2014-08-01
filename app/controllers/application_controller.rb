@@ -13,6 +13,10 @@ class ApplicationController < ActionController::Base
     render(json: error_json(message), status: 403)
   end
 
+  def render_not_implemented_method_error_json(message="Not Implemented error")
+    render(json: error_json(message), status: 501)
+  end
+
   def render_object_not_found_error_json(obj_type, obj_id=nil)
     message = "No #{obj_type.to_s.downcase} found"
     message << " with id #{obj_id}" if obj_id.present?

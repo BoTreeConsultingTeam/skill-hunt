@@ -1,8 +1,8 @@
 class Api::V1::CategoriesController < ApplicationController
-before_action :set_category, only: [:create, :update, :destroy, :show]
-before_action :authenticate_user
-before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
-
+  
+  before_action :set_category, only: [:create, :update, :destroy, :show]
+  before_action :authenticate_user
+  before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
 
   def create
     category = Category.new(category_params)
@@ -25,7 +25,7 @@ before_action :is_admin_user? , only: [:create, :update, :destroy, :show]
   end
 
   def destroy
-    render_forbidden_error_json('the functionality is not been supported')
+    render_not_implemented_method_error_json('the functionality is not been supported')
   end
 
   def show

@@ -4,19 +4,8 @@ require 'shared_context'
 describe Api::V1::CategoriesController, type: :controller do
   include_context 'initialized_objects_for_category'
 
-  def dummy_auth_token
-    "dummy auth token"
-  end
-
-  def update_user_authentication_token(user, auth_token)
-    user.update_attribute(:authentication_token, auth_token)
-  end
-
   before do
     params.merge!(categories_attr)
-    auth_token = dummy_auth_token
-    update_user_authentication_token(admin_user, auth_token)
-    params.merge!(authentication_token: auth_token)
   end
 
   def expected_keys_in_json
@@ -36,7 +25,6 @@ describe Api::V1::CategoriesController, type: :controller do
   end
 
   context "#create" do
-
     def create_category
       post :create, params
     end
@@ -57,9 +45,7 @@ describe Api::V1::CategoriesController, type: :controller do
     end
 
     context "shows error" do
-      
       context 'category name' do
-        
         it "is missing" do
           modify_category_attribute(:name, '')
           create_category
@@ -72,23 +58,19 @@ describe Api::V1::CategoriesController, type: :controller do
           create_category
           expect(get_error('name')).to include 'has already been taken'
         end
-
       end
 
-      it "if not created by administrator" do 
+      it "if an end user tries to create it" do 
         auth_token = "end user token"
-        update_user_authentication_token(end_user, auth_token)
-        params.merge!(authentication_token: auth_token)
+        update_user_authentication(auth_token, end_user)
         create_category
         expect(response_json["errors"]).to_not be_empty
         expect(Category.count).to eq 0  
       end
-
     end
   end
 
   context '#update' do
-
     let!(:category) { Category.create(categories_attr[:category]) }
 
     def update_category(id)
@@ -108,9 +90,7 @@ describe Api::V1::CategoriesController, type: :controller do
     end 
 
     context 'shows error' do
-
       context 'category name' do
-
         it 'is missing' do
           modify_category_attribute(:name, '')
           update_category(category.id)
@@ -128,25 +108,21 @@ describe Api::V1::CategoriesController, type: :controller do
           update_category(category.id)
           expect(get_error('name')).to include 'has already been taken'
         end
-
       end
 
       it 'if not updated by administrator' do
         modify_category_attribute(:name, 'Programming')
         auth_token = "end user token"
-        update_user_authentication_token(end_user, auth_token)
-        params.merge!(authentication_token: auth_token)
+        update_user_authentication(auth_token, end_user)
         update_category(category.id)
 
         expect(response_json["errors"]).to_not be_empty
         expect(category.name).to include 'Database'
       end
-
     end
   end
 
   context '#destroy' do
-    
     let!(:category) { Category.create(categories_attr[:category]) }
 
     def delete_category(id)
@@ -156,13 +132,11 @@ describe Api::V1::CategoriesController, type: :controller do
 
     it 'shows error that action not supported' do
       delete_category(category.id)
-      expect(response_json['error']).to_not be_empty
+      expect(response.status).to be 501
     end
-    
   end
 
   context "#show" do
- 
     let!(:category) { Category.create(categories_attr[:category]) }
 
     def show_category(id)
@@ -179,6 +153,5 @@ describe Api::V1::CategoriesController, type: :controller do
       show_category(non_exists_category_id)
       expect(response_json['error']).to_not be_empty
     end
-
   end
 end

@@ -3,6 +3,7 @@ shared_context 'initialize_common_objects' do
   let(:response_json) { JSON.parse(response.body) }
   let(:admin_user_role) { Role.create( role_name:'administrator') }        
   let(:end_user_role)   { Role.create( role_name:'end_user') }
+  let(:company_representative_role) { Role.create(role_name:'company_representative')}
   let!(:india) { Country.create(country_name: 'India') }
   let(:user_attrs) {
     {
@@ -42,6 +43,23 @@ shared_context 'initialize_common_objects' do
                    other_user_attrs}
 
   let(:current_user) { admin_user }
+
+  def dummy_auth_token
+    "dummy auth token"
+  end
+
+  def update_user_authentication_token(user, auth_token)
+    user.update_attribute(:authentication_token, auth_token)
+  end
+
+  def update_user_authentication(token, user)
+    update_user_authentication_token(user, token)
+    params.merge!(authentication_token: token)
+  end
+
+  before do
+    update_user_authentication(dummy_auth_token, admin_user)
+  end
 end
 
 
@@ -91,6 +109,20 @@ shared_context 'initialized_objects_for_company' do
     {
     company: {
       company_name: "TCS"
+      }
+    }
+  }
+end
+
+
+shared_context 'initialized_objects_for_country' do
+  include_context 'initialize_common_objects'
+
+  let(:country_json) { response_json["country"] }
+  let(:country_attrs){
+    {
+      country:{
+        country_name: "America"
       }
     }
   }

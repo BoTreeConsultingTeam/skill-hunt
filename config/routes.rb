@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       resources :users,         only: [:create, :update, :destroy, :show]
       resources :categories,    only: [:create, :update, :destroy, :show]
       resources :companies,     only: [:create, :update, :destroy, :show]
+      resources :countries,     only: [:create, :update, :destroy, :show]
       resources :skills,        only: [:create, :update, :destroy, :show] do
         member do
           post :like

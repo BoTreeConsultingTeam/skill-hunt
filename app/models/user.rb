@@ -57,9 +57,21 @@ class User < ActiveRecord::Base
       errors.add(:country_id, 'must be india') unless (country_id == Country.find_by(country_name: 'India').id)
   end
   
+  def is_having_role?(role_name)
+    return false if ( role.blank? or role_name.blank?)
+    role.role_name == role_name.to_s
+  end
+
   def is_administrator?
-    return false unless role.present?
-    role.role_name == "administrator"
+    is_having_role?(:administrator)
+  end
+
+  def is_end_user?
+     is_having_role?(:end_user)
+  end
+
+  def is_company_representative?
+    is_having_role?(:company_representative)
   end
 
   def as_json(options=nil)

@@ -1,4 +1,5 @@
 class Api::V1::UsersController < ApplicationController
+
   before_action :authenticate_user
   before_action :is_admin_user?, only: [:create, :update, :destroy] 
   before_action :set_user,       only: [:create, :update, :destroy, :show]

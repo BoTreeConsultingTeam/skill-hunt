@@ -1,5 +1,6 @@
 class Company < ActiveRecord::Base
   validates_presence_of :company_name, message: "is required"  
+  validates_uniqueness_of :company_name, message: 'already exists'
 
   def as_json(options=nil)
     options ||= {}

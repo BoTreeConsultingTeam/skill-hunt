@@ -1,10 +1,11 @@
 require 'spec_helper'
-require 'shared_examples'
+require 'shared_context'
 
 describe User do
+  include_context 'initialize_common_objects'
 
   let(:user) { User.new }
-  let!(:india) { Country.create(country_name: 'India') }
+  let!(:errors) { user.save; user.errors }
 
   it { should respond_to(:first_name) }
   it { should respond_to(:last_name) }
@@ -14,25 +15,7 @@ describe User do
   it { should respond_to(:blocked) }  
   it { should respond_to(:country_id) }
 
-=begin
-  shared_examples "check" do |attribute, message|
-    let!(:errors) { user.save; user.errors }
-
-    it "cannot be blank" do
-      expect(errors["#{attribute}"]).to_not be_empty
-    end
-
-    it "when blank shows user-friendly message" do
-      expect(errors["#{attribute}"]).to include("#{message}")
-    end
-  end
-=end
   context "#first_name" do
-
-    #let!(:errors) { user.save; user.errors }
-    it_should_behave_like "check", [User.new, :first_name, "is required"]
-    
-=begin 
     it "cannot be blank" do
       expect(errors[:first_name]).to_not be_empty
     end  
@@ -40,14 +23,9 @@ describe User do
     it "when blank shows user-friendly message" do
       expect(errors[:first_name]).to include("is required")
     end
-=end
   end
 
   context "#last_name" do
-    #let!(:errors) { user.save; user.errors }
-    it_should_behave_like "check", [User.new, :last_name, "is required"]
-
-=begin
     it "cannot be blank" do 
       expect(user.errors[:last_name]).to_not be_empty
     end
@@ -55,16 +33,9 @@ describe User do
     it "when blank shows user-friendly message" do
       expect(user.errors[:last_name]).to include("is required")
     end
-=end
   end
 
-
   context "#gender" do
-
-    let!(:errors) { user.save; user.errors }
-    it_should_behave_like "check", [User.new, :gender, "must be selected"]
-
-=begin
     it "cannot be blank" do 
       expect(errors[:gender]).to_not be_empty
     end
@@ -72,7 +43,6 @@ describe User do
     it "when not selected shows user-friendly message" do
       expect(errors[:gender]).to include("must be selected")
     end
-=end
 
     it "must have only one character" do      
       user.gender= "M" * 1 
@@ -88,13 +58,11 @@ describe User do
   end
 
   context "#email" do  
-    it_should_behave_like "check", [User.new, :email, "is required"]
-=begin
     it "email cannot be blank " do
       user.save   
       expect(user.errors[:email]).to_not be_empty
     end
-=end
+
     it "email already taken" do
       user = User.new(first_name:"Ankur",
                       last_name: "Vyas", 
@@ -128,10 +96,6 @@ describe User do
   end
 
   context "#password" do
-    let!(:errors) { user.save; user.errors }
-    it_should_behave_like "check", [User.new, :password, "is required"]   
-  
-=begin
     it "cannot be blank" do      
       expect(errors[:password]).to_not be_empty
     end
@@ -139,7 +103,7 @@ describe User do
     it "when blank shows custom message " do      
       expect(errors[:password]).to include("is required")
     end
-=end
+
     context "is invalid" do
       it "when have less than 8 characters" do
         user.password = "a"*6
@@ -175,12 +139,7 @@ describe User do
     end
   end
 
-
   context "#country_id" do
-    #let!(:errors) { user.save; user.errors}
-    it_should_behave_like "check", [User.new, :country_id, "must be selected"]   
-  
-=begin
     it "cannot be blank" do    
       expect(errors[:country_id]).to_not be_empty
     end
@@ -188,8 +147,6 @@ describe User do
     it "when not selected shows user-friendly message" do   
       expect(errors[:country_id]).to include("must be selected")
     end
-  
-=end
   end
 
   context "#blocked" do
@@ -208,32 +165,50 @@ describe User do
   end 
 
   context "#is_administrator?" do
-
-    skip
-=begin
     it "returns false when user does not have any role" do
       expect(user.is_administrator?).to be false
     end
 
     it "returns true when user is assigned administrator role" do
-      skip
+      user.role = admin_user_role
+      expect(user.is_administrator?).to be true
     end
 
     it "returns false when user is not assigned administrator role" do
-      skip
+      user.role = end_user_role
+      expect(user.is_administrator?).to be false
     end
-=end
   end
 
-  context "#is_novice" do
-    skip
+  context "#is_end_user?", t: true do
+    it "returns false when user does not have any role" do
+      expect(user.is_end_user?).to be false
+    end
+
+    it "returns true when user is assigned administrator role" do
+      user.role = end_user_role
+      expect(user.is_end_user?).to be true
+    end
+
+    it "returns false when user is not assigned administrator role" do
+      user.role = admin_user_role
+      expect(user.is_end_user?).to be false
+    end
   end
 
   context "#is_company_representative" do
-    skip
-  end
+      it "returns false when user does not have any role" do
+      expect(user.is_company_representative?).to be false
+    end
 
-  it "is having skills" do
-    skip
+    it "returns true when user is assigned administrator role" do
+      user.role = company_representative_role
+      expect(user.is_company_representative?).to be true
+    end
+
+    it "returns false when user is not assigned administrator role" do
+      user.role = admin_user_role
+      expect(user.is_company_representative?).to be false
+    end
   end
 end

@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'shared_examples'
 
 describe Category do
   let(:category) { Category.new }
@@ -9,7 +8,7 @@ describe Category do
   context "#name" do
     let!(:errors) { category.save; category.errors }
 
-    it "cannot be blank", test: true do         
+    it "cannot be blank" do         
       expect(errors['name']).to_not be_empty
     end
     
@@ -28,14 +27,11 @@ describe Category do
       skip
       category.name = 'a'*31
       category.save
-      puts errors[:name]
       expect(errors[:name]).to include "must be less than 30 characters"
     end
-
   end
   
   it "has list of skills" do
     skip
   end
-
 end
