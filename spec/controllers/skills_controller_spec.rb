@@ -1,24 +1,34 @@
 require 'spec_helper'
 
 describe Api::V1::SkillsController, type: :controller do
-  include_context 'initialized_objects_for_skill'
+  include_context 'initialize_common_objects'
 
   let!(:current_user) { update_user_authentication(dummy_auth_token, admin_user) }
+
+  let(:skill_json) { response_json['skill'] }
+  let(:category) { FactoryGirl.create(:database_category) } 
+  
+  let(:skills_attr){
+    {
+      skill:    
+      {
+        name: 'OOPS',
+        desc: 'Object Oriented Language',
+        category_id: category.id
+      }
+    }
+  }
 
   before do
     params.merge!(skills_attr)
   end
 
   def expected_keys_in_json
-    %w(skill_name skill_desc category_id)
+    %w(name desc category_id)
   end
 
   def get_error(attribute)
     skill_json['errors'][attribute]
-  end
-
-  def modify_skill_attribute(attribute,value)
-    params[:skill][attribute] = value
   end
 
   def non_exists_skill_id
@@ -26,55 +36,66 @@ describe Api::V1::SkillsController, type: :controller do
   end
 
   context '#create' do
-    def create_skill
-      post :create, params
-    end
 
     it 'successfully creates the skill' do
-      expect { create_skill }.to change(Skill,:count).by(1)
+      expect { post :create, params }.to change(Skill,:count).by(1)
     end
 
     it 'returns response code 201' do
-      create_skill
+      post :create, params
+
       expect(response.status).to be 201
     end
 
     it 'returns created skill json' do
-      create_skill
+      post :create, params
+
       expect(skill_json.keys).to eql expected_keys_in_json
     end
 
     context 'shows error' do
+
       context 'skill name' do
+
         it 'is missing' do
-          modify_skill_attribute('skill_name','')
-          create_skill
-          expect(get_error('skill_name')).to include 'is required'
+          params[:skill] = { name: '' }
+          
+          post :create, params
+
+          expect(get_error('name')).to include 'is required'
         end
 
         it 'already exists' do
           skill = Skill.create(skills_attr[:skill])
-          modify_skill_attribute('skill_name','Ruby')
-          create_skill
-          expect(get_error('skill_name')).to include 'has already been taken'
+          params[:skill] = { name: 'OOPS' }
+          
+          post :create, params
+
+          expect(get_error('name')).to include 'has already been taken'
         end
       end
 
       it 'when skill description is missing' do
-        modify_skill_attribute('skill_desc','')
-        create_skill
-        expect(get_error('skill_desc')).to include 'is required'
+        params[:skill] = { desc: '' }
+        
+        post :create, params
+        
+        expect(get_error('desc')).to include 'is required'
       end
 
       it 'when category is missing' do
-        modify_skill_attribute('category_id','')
-        create_skill
+        params[:skill] = { category_id: '' }
+        
+        post :create, params
+
         expect(get_error('category_id')).to include 'is required'
       end
 
       it 'if an end user tries to create it' do 
         set_current_user(end_user)
-        create_skill
+        
+        post :create, params
+
         expect(response_json["errors"]).to_not be_empty
         expect(Skill.count).to eq 0  
       end
@@ -82,72 +103,92 @@ describe Api::V1::SkillsController, type: :controller do
   end
 
   context '#update' do
-    let!(:skill) { Skill.create(skills_attr[:skill]) }
 
-    def update_skill(id)
-      params[:id] = id
-      put :update, params  
-    end
+    let!(:skill) { FactoryGirl.create(:java_skill) }
 
     it 'successfully updates skill name' do
-      modify_skill_attribute('skill_name','Java')
-      update_skill(skill.id)
-      expect(skill_json['skill_name']).to include 'Java'
+      params[:skill] = { name: 'Java' }
+
+      params[:id] = skill.id
+      put :update, params  
+      expect(skill_json['name']).to include 'Java'
     end
 
     it 'successfully updates skill description' do
-      modify_skill_attribute('skill_desc','Pure Object Oriented Language')
-      update_skill(skill.id)
-      expect(skill_json['skill_desc']).to include 'Pure Object Oriented Language'
+      params[:skill] = { desc: 'Pure Object Oriented Language' }
+      
+      params[:id] = skill.id
+      put :update, params
+
+      expect(skill_json['desc']).to include 'Pure Object Oriented Language'
     end
 
     it 'successfully updates category' do
-      new_category = Category.create(name: 'Framework')
-      modify_skill_attribute('category_id',new_category.id)
-      update_skill(skill.id)
+      new_category = FactoryGirl.create(:framework_category)
+      params[:skill] = { category_id: new_category.id }
+
+      params[:id] = skill.id
+      put :update, params
+
       expect(skill_json['category_id']).to eq new_category.id
     end
 
     context 'show error' do
+
       context 'skill name' do
+      
         it 'is missing' do
-          modify_skill_attribute('skill_name','')
-          update_skill(skill.id)
-          expect(get_error('skill_name')).to include 'is required'
+          params[:skill] = { name: '' }
+
+          params[:id] = skill.id
+          put :update, params
+
+          expect(get_error('name')).to include 'is required'
         end
 
         it 'does not exists' do
-          update_skill(-1)
+          params[:id] = non_exists_skill_id
+          put :update, params
+
           expect(response_json['error']).to_not be_empty
         end
         
         it 'already exists' do
-          new_skill = Skill.create(skill_name: 'Python', 
-                                  skill_desc: 'Python Language', 
-                                  category_id: category.id)
-          
-          modify_skill_attribute('skill_name','Python')
-          update_skill(skill.id)
-          expect(get_error('skill_name')).to include 'has already been taken'
+          new_skill = FactoryGirl.create(:python_skill, :category => category)
+          params[:skill] = { name: 'Python' }
+
+          params[:id] = skill.id
+          put :update, params
+
+          expect(get_error('name')).to include 'has already been taken'
         end
       end
 
       it 'when skill description is missing' do
-        modify_skill_attribute('skill_desc','')
-        update_skill(skill.id)
-        expect(get_error('skill_desc')).to include 'is required'
+        params[:skill] = { desc: '' }
+
+        params[:id] = skill.id
+        put :update, params
+
+        expect(get_error('desc')).to include 'is required'
       end
 
       it 'when category is missing' do
-        modify_skill_attribute('category_id','')
-        update_skill(skill.id)
+        params[:skill] = { category_id: '' }
+
+        params[:id] = skill.id
+        put :update, params
+
         expect(get_error('category_id')).to include 'is required'
       end
 
       it 'if not updated by administrator' do
-        modify_skill_attribute(:skill_name, 'C++')
+        params[:skill] = { name: 'C++' }
         set_current_user(end_user)
-        update_skill(skill.id)
+
+        params[:id] = skill.id
+        put :update, params
+
         expect(response_json["errors"]).to_not be_empty
         expect(category.name).to include 'Database'
       end
@@ -155,65 +196,66 @@ describe Api::V1::SkillsController, type: :controller do
   end
 
   context '#destroy' do
-    let!(:skill) { Skill.create(skills_attr[:skill]) }
 
-    def delete_skill(id)
-      params[:id] = id
-      delete :destroy, params
-    end
+    let!(:skill) { FactoryGirl.create(:java_skill) }
 
     it 'shows error that action not supported' do
-      delete_skill(skill.id)
+      params[:id] = skill.id
+      delete :destroy, params
+
       expect(response.status).to be 501
     end
   end
 
   context '#show' do
-    let!(:skill) { Skill.create(skills_attr[:skill]) }
 
-    def show_skill(id)
-      params[:id] = id
-      get :show, params  
-    end
-    
+    let!(:skill) { FactoryGirl.create(:java_skill) }
+
     it 'returns required skill json' do
-      show_skill(skill.id)
+      params[:id] = skill.id
+      get :show, params  
+
       expect(skill_json.keys).to eql expected_keys_in_json
     end
 
     it 'show error when skill does not exists' do
-      show_skill(non_exists_skill_id)
+      params[:id] = non_exists_skill_id
+      get :show, params  
+
       expect(response_json['error']).to_not be_empty
     end
   end
   
   context "#like" do
-    let!(:category)  { Category.create(name:"Web Apps") }
+
+    let!(:category)  { FactoryGirl.create(:framework_category) }
 
     let!(:skill_1) {  
-                      Skill.create( 
-                        skill_name: "Ruby On Rails1",
-                        skill_desc: "Used to create dynamic websites",
-                        category_id: category.id )  
+                      FactoryGirl.create(:dot_net_skill, :category => category) 
                     }
 
     it 'assigns skill to user, when liked' do
-      params.delete(:skill)      
+      params.delete(:skill)   
+
       params[:id] = skill_1.id     
       post :like, params
+
       expect(admin_user_attrs.skills).to_not be_empty
     end
 
     it "display error when skill does not exist" do
-      params[:id] = -1
+      params[:id] = non_exists_skill_id
       post :like, params
+
       expect(response_json["error"]).to_not be_empty
     end
 
     it "displays message 'already liked' when skill is already liked by user" do
       admin_user_attrs.skills << skill_1
+
       params[:id] = skill_1.id
       post :like, params
+
       expect(response_json["error"]).to_not be_empty
     end
   end

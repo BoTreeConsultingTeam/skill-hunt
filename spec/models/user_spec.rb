@@ -69,7 +69,7 @@ describe User do
                       email: "ankurvy1@gmail.com",
                       password: "Ankur12@#",
                       blocked: "false",
-                      country_id: india.id
+                      country_id: india_country.id
                      )
       user.save
       expect(user.errors).to be_empty
@@ -80,7 +80,7 @@ describe User do
                       email: "ankurvy1@gmail.com",
                       password: "Ankur12@#",
                       blocked: "false",
-                      country_id: india.id
+                      country_id: india_country.id
                       )
       
       other_user.save
@@ -179,7 +179,7 @@ describe User do
     end
   end
 
-  context "#is_end_user?", t: true do
+  context "#is_end_user?" do
     it "returns false when user does not have any role" do
       expect(user.is_end_user?).to be false
     end

@@ -44,6 +44,6 @@ class Api::V1::CountriesController < ApplicationController
     end
 
     def country_params
-      params.require(:country).permit(:country_name)
+      params.require(:country).permit(:name)
     end
 end

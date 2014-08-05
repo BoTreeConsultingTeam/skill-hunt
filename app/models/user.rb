@@ -16,6 +16,7 @@ class User < ActiveRecord::Base
   has_many :user_skills
   has_many :skills, through: :user_skills
 
+  belongs_to :country 
   after_create :generate_authentication_token
 
   def validate_gender
@@ -54,12 +55,12 @@ class User < ActiveRecord::Base
 
   def validate_country
       errors.add(:country_id, 'must be selected') unless country_id.present?
-      errors.add(:country_id, 'must be india') unless (country_id == Country.find_by(country_name: 'India').id)
+      errors.add(:country_id, 'must be india') unless (country_id == Country.find_by(name: 'India').id)
   end
   
-  def is_having_role?(role_name)
-    return false if ( role.blank? or role_name.blank?)
-    role.role_name == role_name.to_s
+  def is_having_role?(name)
+    return false if ( role.blank? or name.blank?)
+    role.name == name.to_s
   end
 
   def is_administrator?

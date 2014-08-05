@@ -58,6 +58,6 @@ class Api::V1::SkillsController < ApplicationController
     end
 
     def skill_params
-      params.require(:skill).permit(:skill_name, :skill_desc, :category_id)
+      params.require(:skill).permit(:name, :desc, :category_id)
     end
 end

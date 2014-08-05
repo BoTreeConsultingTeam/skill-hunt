@@ -3,10 +3,10 @@ require 'spec_helper'
 describe Skill do
 	let (:skill){ Skill.new }
 	
-	it { should respond_to(:skill_name)}
-	it { should respond_to(:skill_desc)}
+	it { should respond_to(:name)}
+	it { should respond_to(:desc)}
 
-	context "#skill_name" do 
+	context "#name" do 
     let!(:errors) { skill.save; skill.errors }
 
 		it "cannot be blank" do
@@ -14,11 +14,11 @@ describe Skill do
     end 
     
     it "when blank shows user-friendly message" do
-      expect(errors[:skill_name]).to include("is required")
+      expect(errors[:name]).to include("is required")
     end
   end
 
-  context "#skill_desc" do 
+  context "#desc" do 
   	let!(:errors) { skill.save; skill.errors }
 
   	it "cannot be blank" do
@@ -26,7 +26,7 @@ describe Skill do
   	end 
 
     it "when blank shows user-friendly message" do
-      expect(errors[:skill_desc]).to include "is required"
+      expect(errors[:desc]).to include "is required"
     end
   end
 

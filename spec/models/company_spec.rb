@@ -3,9 +3,9 @@ require 'spec_helper'
 describe Company do
   let(:company) { Company.new }
 
-  it { should respond_to(:company_name) }
+  it { should respond_to(:name) }
   
-  context "#company_name" do
+  context "#name" do
     let!(:errors){ company.save; company.errors }
     
     it "can not be blank" do
@@ -13,7 +13,7 @@ describe Company do
     end
     
     it "when blank shows user-friendly message" do
-      expect(errors[:company_name]).to include("is required")
+      expect(errors[:name]).to include("is required")
     end 
   end
 
